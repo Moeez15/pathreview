@@ -47,7 +47,7 @@ Still not 100% sure whether the grading rubric expects the route-level 400 in ad
 
 ### Check-in 2 (end of week)
 
-**PR link:** [link to your submitted pull request]
+**PR link:** https://github.com/ascherj/pathreview/pull/608
 
 **Branch:** test/88-post-review-endpoint
 
