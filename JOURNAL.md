@@ -63,3 +63,34 @@ Added a `profile_has_ingested_content` check that runs both at request time in `
 Note: repo-wide `make check`/`make test-unit` have pre-existing lint and test failures unrelated to #88 (documented in PLAN.md Risks & unknowns). Confirmed no new failures introduced: baseline was 57 failed/375 passed, now 53 failed/380 passed (4 fewer failures, 5 more passing, 0 new failures). `ruff check` and `black` are clean on every file I touched.
 
 **Draft PR feedback received from:** none
+
+## Week 10 — Iteration & reflection
+
+### Reviewer feedback
+
+**Feedback received:** [X] Yes  [] No — still awaiting review
+
+**Summary of feedback:**
+No review comments yet on PR #608 as of writing this. Will update this section if/when feedback comes in.
+
+**How you responded:**
+N/A — nothing to respond to yet. In the meantime I re-ran `make check` and `make test-unit` one more time on my branch to make sure nothing had drifted since I opened the PR.
+
+---
+
+### Reflection
+
+**What was harder than you expected?**
+Honestly the actual fix (the `profile_has_ingested_content` check) was the easy part — figuring out *where* it belonged took longer than writing it. I went back and forth between just rejecting at the route layer vs. only failing inside `process_review`, and ended up doing both because I couldn't fully convince myself which one the issue actually wanted. Also didn't expect the pre-commit hooks to lint the whole file instead of just my diff — I had to clean up a bunch of pre-existing type/lint issues in `reviews.py` and `profile_service.py` that had nothing to do with #88 just to get the hook to pass.
+
+**What did you learn about working in a large codebase?**
+You can't just fix the bug in isolation — there's a whole existing pattern (mock usage in tests, `str` vs `UUID` typing across the service layer, the FastAPI `Depends()` style) that you either have to match or consciously deviate from. I also learned to check whether a test failure is actually caused by my change or was already broken before I touched anything — I almost assumed I broke something in `test_review_service.py` before realizing those 13 failures were pre-existing mock misuse, unrelated to my fix.
+
+**How did AI tools help — and where did they fall short?**
+AI was most useful for the boring-but-necessary stuff: writing the route-level tests, spotting the `str`/`UUID` mismatch pattern across the file, and quickly diffing before/after test counts to prove I didn't introduce regressions. Where it fell short was the judgment call on scope — deciding whether "add a test" in the issue title actually meant "and fix the behavior too" needed me to read the issue, the code, and make a call myself; that's not something I wanted to just hand off.
+
+**What would you do differently if you started over?**
+I'd ask a maintainer (or post in the issue thread) about scope *before* Week 8 instead of just noting it as an open question in PLAN.md and guessing. Would've saved me from second-guessing the "do both route check and service check" decision all the way through Week 9.
+
+**What are you most proud of from this module?**
+Catching the fabricated-review bug in the first place — the fact that a profile with literally nothing in it could get a "complete" review with a fake score is a real trust/safety issue, not just a missing test. Finding and reproducing that felt like actual debugging, not just busywork to satisfy the assignment.
